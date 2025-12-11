@@ -28,7 +28,7 @@ maintainers = [
 dependencies = [
     "alembic>=1.16.4",
     "asyncpg>=0.30.0",
-    "fastapi>=0.116.1",
+    "fastapi[standard]>=0.116.1",
     "greenlet>=3.2.3",
     "langchain-openai>=1.0.3",
     "langgraph>=1.0.3",
@@ -43,6 +43,11 @@ dependencies = [
     "langfuse>=3.3.4",
     "structlog>=25.4.0",
     "asgi-correlation-id>=4.3.4",
+    "langchain-groq>=1.1.0",
+    "tavily-python>=0.7.14",
+    "langgraph-sdk>=0.2.4",
+    "langchain-core>=1.1.0",
+    "langgraph-cli>=0.4.9",
 ]
 
 [project.urls]
