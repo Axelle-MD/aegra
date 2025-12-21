@@ -727,6 +727,52 @@ async def get_thread_history_get(
     return await get_thread_history_post(thread_id, req, user, session)
 
 
+@router.patch("/threads/{thread_id}", response_model=Thread)
+async def update_thread(
+    thread_id: str,
+    request: ThreadCreate,
+    user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session),
+):
+    """Update thread metadata"""
+    
+    logger.debug(f"PATCH /threads/{thread_id} - request metadata: {request.metadata}")
+    
+    # Check if thread exists
+    stmt = select(ThreadORM).where(
+        ThreadORM.thread_id == thread_id, ThreadORM.user_id == user.identity
+    )
+    thread = await session.scalar(stmt)
+    if not thread:
+        raise HTTPException(404, f"Thread '{thread_id}' not found")
+    
+    logger.debug(f"Existing metadata: {thread.metadata_json}")
+    
+    # Update metadata - merge with existing metadata
+    if request.metadata:
+        existing_metadata = thread.metadata_json or {}
+        existing_metadata.update(request.metadata)
+        thread.metadata_json = existing_metadata
+        
+        # Mark as modified for SQLAlchemy to detect the change
+        from sqlalchemy.orm.attributes import flag_modified
+        flag_modified(thread, "metadata_json")
+        
+        logger.debug(f"Updated metadata: {thread.metadata_json}")
+    
+    await session.commit()
+    await session.refresh(thread)
+    
+    logger.debug(f"Metadata after commit: {thread.metadata_json}")
+    
+    return Thread.model_validate(
+        {
+            **{c.name: getattr(thread, c.name) for c in thread.__table__.columns},
+            "metadata": thread.metadata_json,
+        }
+    )
+
+
 @router.delete("/threads/{thread_id}")
 async def delete_thread(
     thread_id: str,
