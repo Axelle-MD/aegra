@@ -15,6 +15,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - axelle_network
 
   # Aegra Server
   aegra:
@@ -28,16 +30,18 @@ services:
       - AUTH_TYPE=noop
       - DEBUG=true
       - PORT=${PORT:-2024}
+      - WEAVIATE_URL=http://weaviate:8080
     depends_on:
       postgres:
         condition: service_healthy
     volumes:
       - ./aegra.json:/app/aegra.json:ro
       - ./graphs:/app/graphs:ro
-      - ./src:/app/src:ro # for hot reload support of server
+      - ./src:/app/src:ro
       - ./auth.py:/app/auth.py:ro
       - ./.env:/app/.env:ro
-      - ./alembic:/app/alembic:ro # for migrations
+      - ./alembic:/app/alembic:ro
+      - ../axelle_ai:/app/axelle_ai:ro
     command: >
       sh -c "
         echo 'Running database migrations...' &&
@@ -45,6 +49,8 @@ services:
         echo 'Starting Aegra server...' &&
         uvicorn src.agent_server.main:app --host 0.0.0.0 --port $${PORT:-8000} --reload
       "
+    networks:
+      - axelle_network
 
   # Redis (optional - for advanced queuing in future phases)
   redis:
@@ -53,8 +59,14 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    networks:
+      - axelle_network
     profiles:
       - redis
+
+networks:
+  axelle_network:
+    external: true
 
 volumes:
   postgres_data:
