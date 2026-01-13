@@ -27,11 +27,26 @@ if AUTH_TYPE == "noop":
 
     @auth.authenticate
     async def authenticate(headers: dict[str, str]) -> Auth.types.MinimalUserDict:
-        """No-op authentication that allows all requests."""
-        _ = headers  # Suppress unused warning
+        """No-op authentication that allows all requests, respecting x-user-id."""
+        logger.info(f"DEBUG AUTH HEADERS: {list(headers.keys())}")
+        
+        # Check x-user-id (case insensitive)
+        user_id = (
+            headers.get("x-user-id") 
+            or headers.get("X-User-Id") 
+            or "anonymous"
+        )
+        display_name = (
+            headers.get("x-user-name")
+            or headers.get("X-User-Name")
+            or "Anonymous User"
+        )
+        
+        logger.info(f"DEBUG AUTH RESOLVED USER: {user_id}")
+
         return {
-            "identity": "anonymous",
-            "display_name": "Anonymous User",
+            "identity": user_id,
+            "display_name": display_name,
             "is_authenticated": True,
         }
 
