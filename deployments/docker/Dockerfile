@@ -37,6 +37,7 @@ FROM base AS final
 # Install only minimal runtime libs (psycopg[binary] used, so libpq not required at runtime)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy installed Python packages and console scripts from builder
