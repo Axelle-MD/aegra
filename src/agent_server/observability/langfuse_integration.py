@@ -79,3 +79,46 @@ def get_tracing_callbacks() -> list[Any]:
     manager.register_provider(_langfuse_provider)
 
     return manager.get_all_callbacks()
+
+
+def _get_langfuse_client():
+    """Lazily create and return the Langfuse client instance."""
+    if not _LANGFUSE_LOGGING_ENABLED:
+        raise RuntimeError("Langfuse logging is not enabled (LANGFUSE_LOGGING != true)")
+    try:
+        from langfuse import Langfuse
+
+        return Langfuse()
+    except ImportError:
+        raise RuntimeError(
+            "langfuse package is not installed. Run 'pip install langfuse'."
+        )
+
+
+def send_score(
+    trace_id: str,
+    name: str,
+    value: float,
+    comment: str | None = None,
+    user_id: str | None = None,
+) -> str | None:
+    """Send a score to Langfuse for a given trace.
+
+    Returns the score ID if successful, None otherwise.
+    """
+    client = _get_langfuse_client()
+    score = client.score(
+        trace_id=trace_id,
+        name=name,
+        value=value,
+        comment=comment,
+        data_type="NUMERIC",
+    )
+    client.flush()  # Ensure the score is sent immediately
+    logger.info(
+        "langfuse_score_sent",
+        trace_id=trace_id,
+        name=name,
+        value=value,
+    )
+    return getattr(score, "id", None)

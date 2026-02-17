@@ -28,6 +28,7 @@ from fastapi.responses import JSONResponse
 from starlette.middleware.authentication import AuthenticationMiddleware
 
 from .api.assistants import router as assistants_router
+from .api.feedback import router as feedback_router
 from .api.runs import router as runs_router
 from .api.store import router as store_router
 from .api.threads import router as threads_router
@@ -115,6 +116,7 @@ app.include_router(assistants_router, prefix="", tags=["Assistants"])
 app.include_router(threads_router, prefix="", tags=["Threads"])
 app.include_router(runs_router, prefix="", tags=["Runs"])
 app.include_router(store_router, prefix="", tags=["Store"])
+app.include_router(feedback_router, prefix="", tags=["Feedback"])
 
 
 # Error handling
