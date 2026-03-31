@@ -6,10 +6,9 @@
     "axelle_chat": "./axelle_ai/src/agent.py:agent"
   },
   "http": {
-    "app": "./examples/custom_routes_example.py:app"
+    "app": "./axelle_ai/api.py:app"
   },
-  "auth":{
+  "auth": {
     "path": "./auth.py:auth"
   }
 }
-
